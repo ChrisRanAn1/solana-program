@@ -16,7 +16,7 @@ describe("simple-orderbook-dex", () => {
   const program = anchor.workspace.simpleOrderbookDex as Program<SimpleOrderbookDex>;
   const connection = provider.connection;
 
-  // 测试会用到的角色
+  // user key
   const maker = Keypair.generate();
   const taker = Keypair.generate();
 
@@ -84,7 +84,7 @@ describe("simple-orderbook-dex", () => {
     takerBase = await createAssociatedTokenAccount(connection, walletPayer, baseMint, taker.publicKey);
     takerQuote = await createAssociatedTokenAccount(connection, walletPayer, quoteMint, taker.publicKey);
 
-    // 给双方发些测试资金
+    // fund wallet
     await mintTo(connection, walletPayer, baseMint, makerBase, provider.wallet.publicKey, 1_000_000_000);
     await mintTo(connection, walletPayer, quoteMint, makerQuote, provider.wallet.publicKey, 1_000_000_000);
     await mintTo(connection, walletPayer, baseMint, takerBase, provider.wallet.publicKey, 1_000_000_000);
@@ -139,7 +139,7 @@ describe("simple-orderbook-dex", () => {
     const vaultBaseAfter = await getAccount(connection, baseVault);
     assert.equal(vaultBaseAfter.amount.toString(), "100");
 
-    // Taker 买 60 base, 付 120 quote
+    // Taker buy 60 base, pay 120 quote
     await program.methods
       .fillOrder(new BN(60))
       .accountsStrict({
@@ -160,7 +160,7 @@ describe("simple-orderbook-dex", () => {
     const orderAfter = await program.account.order.fetch(askPda);
     assert.equal(orderAfter.amount.toNumber(), 40);
 
-    // Maker 取消剩余 40 base
+    // Maker cancle 40 base
     await program.methods
       .cancelOrder()
       .accountsStrict({
